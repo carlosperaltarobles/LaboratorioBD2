@@ -1,6 +1,6 @@
 use Aerolinea;
---Realizar 5 consultas (normales) que incluya operadores aritméticos o lógicos, obtención
---de datos del sistema, así como cálculos aritméticos sobre cualquier tabla de la Base de Datos
+--Realizar 5 consultas (normales) que incluya operadores aritmï¿½ticos o lï¿½gicos, obtenciï¿½n
+--de datos del sistema, asï¿½ como cï¿½lculos aritmï¿½ticos sobre cualquier tabla de la Base de Datos
 
 
 -- 1- Hacer la sumatoria de todos los precios de la tabla de reservaciones
@@ -14,11 +14,11 @@ SELECT
 SELECT * FROM Reservaciones
  WHERE precio >= 200 ;
 
--- 3- Ver los numero de telefonos que comienzan con el número 25
+-- 3- Ver los numero de telefonos que comienzan con el nï¿½mero 25
 SELECT * FROM Pasajeros
  WHERE telefono LIKE '25%';
 
--- 4- Ver la capcidad de pasajeros que puede llevar el avión Airbus A380
+-- 4- Ver la capcidad de pasajeros que puede llevar el aviï¿½n Airbus A380
 SELECT 
  modelo, capacidad
  FROM Aviones
@@ -63,7 +63,7 @@ FROM Reservaciones AS R
 GROUP BY R.Clase;
 
 
--- 5- Ver los vuelos que hay, la aerolínea y su respectiva escala 
+-- 5- Ver los vuelos que hay, la aerolï¿½nea y su respectiva escala 
 
 SELECT V.numero_vuelo, V.aerolinea, S.escalas
 FROM Vuelos AS V
@@ -102,3 +102,67 @@ on a.id_vuelo=b.id
 inner join Aviones c
 on b.id_avion=c.id
 order by a.id;
+
+-- subconsultas ---------------------------
+
+Select (select *
+        from (select a.nombre
+              from Pasajeros a
+              where id = 2) an)
+
+-- seccionar todo los nombres de los pasajeros en una subconsulta comparando el where , donde se selecione los el id del psajero
+-- que coincidda con el id_pasajero de la tabla reservaciones
+-- y se seleccione el nombre de la tabla pasajeros
+
+SELECT a.nombre
+FROM Pasajeros a
+WHERE id = (SELECT id_pasajero
+            FROM Reservaciones
+            WHERE id_pasajero = a.id)
+
+-- seccionar todo los nombres de los pasajeros, la clase de la tabla reservaciones en una subconsulta comparando el where
+-- donde se selecione los el id del psajero que coincidda con el id_pasajero de la tabla reservaciones
+-- y se seleccione el nombre de la tabla pasajeros, pero que los resultados no se multipliquen en la subconsulta
+
+SELECT a.nombre, b.clase
+FROM Pasajeros a, Reservaciones b
+WHERE a.id = (SELECT id_pasajero
+              FROM Reservaciones
+              WHERE id_pasajero = a.id)
+  AND b.id_pasajero = a.id
+
+
+-- utilizando subconsultas , selecionar los pasajeros que el origen es EspaÃ±a , el resultado debe ser el nombre del pasajero
+-- y el origen, la columan origen esta en la tabla LLegadas y la columna nombre en la tabla pasajeros
+
+select *
+from (select a.id, a.nombre, b.origen
+      from Pasajeros a,
+           LLegadas b,
+           Vuelos c
+      where a.id = (select id_pasajero
+                    from Reservaciones
+                    where id_pasajero = a.id)
+        and c.id = (select id_vuelo
+                    from Reservaciones
+                    where id_pasajero = a.id)
+        and c.id_llegada = b.id
+        and b.origen = 'EspaÃ±a') n
+
+-- realizar una subconsulta donde se seleccione el nombre del pasajero y el numero de vuelo
+-- donde la fecha de salida sea un fecha especifica, la columna fecha_salida esta en la tabla salidas
+-- y la columna numero_vuelo esta en la tabla vuelos, y la columna nombre esta en la tabla pasajeros
+
+select *
+from (select a.id,a.nombre, b.numero_vuelo, c.fecha_salida
+      from Pasajeros a,
+           Vuelos b,
+           Salidas c
+      where a.id = (select id_pasajero
+                    from Reservaciones
+                    where id_pasajero = a.id)
+        and b.id = (select id_vuelo
+                    from Reservaciones
+                    where id_pasajero = a.id)
+        and b.id_salida = c.id
+        and c.fecha_salida = '2023-09-03') n
